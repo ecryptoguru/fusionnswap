@@ -2,9 +2,10 @@
 /* eslint-disable no-console */
 import "dotenv/config"
 import { connect, keyStores, KeyPair } from "near-api-js"
-import BN from "bn.js"
 import fs from "node:fs"
 import path from "node:path"
+
+type NearKeyPairString = Parameters<typeof KeyPair.fromString>[0]
 
 function req(name: string): string {
   const v = process.env[name]
@@ -19,7 +20,7 @@ async function main(): Promise<void> {
   const nodeUrl =
     process.env.NEAR_NODE_URL || "https://near-testnet.api.pagoda.co/rpc/v1"
   const accountId = req("NEAR_ACCOUNT_ID")
-  const privateKey = req("NEAR_PRIVATE_KEY")
+  const privateKey = req("NEAR_PRIVATE_KEY") as NearKeyPairString
   const contractId = req("NEAR_INTENTS_ACCOUNT_ID")
 
   const keyStore = new keyStores.InMemoryKeyStore()
@@ -38,8 +39,8 @@ async function main(): Promise<void> {
     contractId,
     methodName: "intake_intent",
     args: { intent: args },
-    gas: new BN("100000000000000"),
-    attachedDeposit: new BN("0")
+    gas: 100000000000000n,
+    attachedDeposit: 0n
   })
   console.log("Transaction submitted. Status:", res?.status)
 }

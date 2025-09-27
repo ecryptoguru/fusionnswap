@@ -60,6 +60,9 @@ importers:
       '@swc/jest':
         specifier: 0.2.36
         version: 0.2.36(@swc/core@1.5.25)
+      '@types/bn.js':
+        specifier: ^5.2.0
+        version: 5.2.0
       '@types/jest':
         specifier: 29.5.12
         version: 29.5.12
@@ -983,6 +986,9 @@ packages:
 
   '@types/babel__traverse@7.20.7':
     resolution: {integrity: sha512-dkO5fhS7+/oos4ciWxyEyjWe48zmG6wbCheo/G2ZnHx4fs3EU6YC6UM8rk56gAjNJ9P3MTH2jo5jb92/K6wbng==}
+
+  '@types/bn.js@5.2.0':
+    resolution: {integrity: sha512-DLbJ1BPqxvQhIGbeu8VbUC1DiAiahHtAYvA0ZEAa4P31F7IaArc8z3C3BRQdWX4mtLQuABG4yzp76ZrS02Ui1Q==}
 
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
@@ -4212,6 +4218,10 @@ snapshots:
   '@types/babel__traverse@7.20.7':
     dependencies:
       '@babel/types': 7.28.0
+
+  '@types/bn.js@5.2.0':
+    dependencies:
+      '@types/node': 22.16.0
 
   '@types/graceful-fs@4.1.9':
     dependencies:

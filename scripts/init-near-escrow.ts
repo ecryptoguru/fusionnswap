@@ -2,7 +2,8 @@
 /* eslint-disable no-console */
 import "dotenv/config"
 import { connect, keyStores, KeyPair } from "near-api-js"
-import BN from "bn.js"
+
+type NearKeyPairString = Parameters<typeof KeyPair.fromString>[0]
 
 function req(name: string): string {
   const v = process.env[name]
@@ -16,7 +17,7 @@ async function main(): Promise<void> {
   const NETWORK_ID = process.env.NEAR_NETWORK || "testnet"
   const NODE_URL = process.env.NEAR_NODE_URL || "https://rpc.testnet.near.org"
   const MASTER_ID = req("NEAR_ACCOUNT_ID")
-  const MASTER_PK = req("NEAR_PRIVATE_KEY")
+  const MASTER_PK = req("NEAR_PRIVATE_KEY") as NearKeyPairString
   const ESCROW_ID = req("NEAR_ESCROW_ACCOUNT_ID")
 
   const ks = new keyStores.InMemoryKeyStore()
@@ -34,7 +35,8 @@ async function main(): Promise<void> {
     contractId: ESCROW_ID,
     methodName: "new",
     args: {},
-    gas: new BN("300000000000000")
+    gas: 300000000000000n,
+    attachedDeposit: 0n
   })
   console.log("[Init] Done. Transaction:", res.transaction_outcome.id)
 }

@@ -3,6 +3,8 @@
 import "dotenv/config"
 import { connect, keyStores, KeyPair } from "near-api-js"
 
+type NearKeyPairString = Parameters<typeof KeyPair.fromString>[0]
+
 function req(name: string): string {
   const v = process.env[name]
 
@@ -17,7 +19,7 @@ async function main(): Promise<void> {
     process.env.NEAR_NODE_URL || "https://near-testnet.api.pagoda.co/rpc/v1"
 
   const accountId = req("NEAR_ACCOUNT_ID")
-  const privateKey = req("NEAR_PRIVATE_KEY")
+  const privateKey = req("NEAR_PRIVATE_KEY") as NearKeyPairString
 
   const contractId =
     process.env.CONTRACT_ID || process.env.NEAR_ESCROW_ACCOUNT_ID

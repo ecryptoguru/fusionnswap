@@ -10,8 +10,7 @@ export default [
   ...oneInchEslintConfig,
   {
     rules: {
-      "no-console": "off",
-      "prettier/prettier": ["error", { semi: false, trailingComma: "none" }]
+      "no-console": "off"
     },
     files: ["tests/**/**"]
   },

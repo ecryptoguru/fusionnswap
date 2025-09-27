@@ -14,6 +14,7 @@
 import "dotenv/config"
 import { ethers } from "ethers"
 import { connect, keyStores, KeyPair } from "near-api-js"
+type NearKeyPairString = Parameters<typeof KeyPair.fromString>[0]
 import BN from "bn.js"
 import * as crypto from "node:crypto"
 import { createImmutables } from "../utils/address-encoding.js"
@@ -141,7 +142,7 @@ async function main(): Promise<void> {
   const NETWORK_ID = process.env.NEAR_NETWORK || "testnet"
   const NODE_URL = process.env.NEAR_NODE_URL || "https://rpc.testnet.near.org"
   const NEAR_ACCOUNT_ID = req("NEAR_ACCOUNT_ID")
-  const NEAR_PRIVATE_KEY = req("NEAR_PRIVATE_KEY")
+  const NEAR_PRIVATE_KEY = req("NEAR_PRIVATE_KEY") as NearKeyPairString
   const NEAR_ESCROW_ID = req("NEAR_ESCROW_ACCOUNT_ID")
 
   // Generate secret for this transfer
@@ -170,7 +171,7 @@ async function main(): Promise<void> {
     await ks.setKey(
       NETWORK_ID,
       NEAR_ACCOUNT_ID,
-      KeyPair.fromString(NEAR_PRIVATE_KEY as any)
+      KeyPair.fromString(NEAR_PRIVATE_KEY)
     )
     const near = await connect({
       networkId: NETWORK_ID,

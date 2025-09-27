@@ -1000,14 +1000,14 @@ export class EnhancedCrossChainAgent {
     nearTxHash: string,
     nearAmount: string,
   ): Promise<void> {
-    console.log(`🔗 Creating ETH escrow for NEAR deposit...`);
-    console.log(`   NEAR TX: ${nearTxHash}`);
-    console.log(`   NEAR Amount: ${nearAmount} yoctoNEAR`);
+    console.log(`🔗 Creating ETH escrow for NEAR deposit...`)
+    console.log(`   NEAR TX: ${nearTxHash}`)
+    console.log(`   NEAR Amount: ${nearAmount} yoctoNEAR`)
 
     if (this.config.dryRun) {
-      console.log("🧪 DRY RUN: Would create ETH escrow");
+      console.log("🧪 DRY RUN: Would create ETH escrow")
 
-      return;
+      return
     }
 
     try {
@@ -1016,28 +1016,26 @@ export class EnhancedCrossChainAgent {
         ethers.concat([
           ethers.toUtf8Bytes("near-deposit-"),
           ethers.toUtf8Bytes(nearTxHash),
-        ]),
-      );
+        ])
+      )
 
       const secret = ethers.keccak256(
         ethers.toUtf8Bytes(`secret-${nearTxHash}`),
-      );
-      const hashlock = ethers.keccak256(secret);
+      )
+      const hashlock = ethers.keccak256(secret)
 
       // Convert NEAR to ETH (1:1 for demo)
-      const ethAmount = ethers.parseEther("0.01"); // Fixed amount for testing
+      const ethAmount = ethers.parseEther("0.01") // Fixed amount for testing
 
-      console.log(`   Order Hash: ${orderHash}`);
-      console.log(`   Secret: ${secret}`);
-      console.log(`   Hashlock: ${hashlock}`);
-      console.log(`   ETH Amount: ${ethers.formatEther(ethAmount)} ETH`);
+      console.log(`   Order Hash: ${orderHash}`)
+      console.log(`   Secret: ${secret}`)
+      console.log(`   Hashlock: ${hashlock}`)
+      console.log(`   ETH Amount: ${ethers.formatEther(ethAmount)} ETH`)
 
       // Create ETH escrow using deploySrc
-      await this.createCorrespondingEvmEscrow(orderHash, hashlock, ethAmount);
+      await this.createCorrespondingEvmEscrow(orderHash, hashlock, ethAmount)
     } catch (error) {
-      console.error(
-        `❌ Failed to create ETH escrow for NEAR deposit: ${error}`,
-      );
+      console.error(`❌ Failed to create ETH escrow for NEAR deposit: ${error}`)
     }
   }
 
