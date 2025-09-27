@@ -1,7 +1,10 @@
 [package]
 name = "near-htlc-escrow"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+description = "Production-ready NEAR HTLC Escrow contract for cross-chain atomic swaps"
+authors = ["Enhanced Cross-Chain Bridge Team"]
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

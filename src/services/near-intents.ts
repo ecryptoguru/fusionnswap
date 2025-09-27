@@ -32,7 +32,7 @@ export interface CrossChainIntent {
     targetAmount: string
     deadline: number
     recipient?: string
-    metadata?: any
+    metadata?: Record<string, unknown>
 }
 
 export interface ProcessedIntent {
@@ -108,27 +108,27 @@ export class NearIntentsService {
         // Submitting cross-chain intent
 
         try {
-            // Submit to NEAR Intents contract
+            // Submit to NEAR Intents contract using the correct method name
             await this.nearAccount.functionCall({
                 contractId: this.config.intentsContractId,
-                methodName: 'submit_intent',
+                methodName: 'intake_intent',
                 args: {
                     intent: {
-                        id: intentId,
-                        user: intent.user,
-                        source_chain: intent.sourceChain,
-                        target_chain: intent.targetChain,
-                        source_token: intent.sourceToken,
-                        target_token: intent.targetToken,
-                        source_amount: intent.sourceAmount,
-                        target_amount: intent.targetAmount,
-                        deadline: intent.deadline,
-                        recipient: intent.recipient,
-                        metadata: intent.metadata || {}
+                        maker_near: intent.user,
+                        taker_near: intent.user, // Use the same NEAR account for taker
+                        maker_asset_near: intent.sourceToken === 'near' ? 'near' : intent.sourceToken,
+                        taker_asset_evm:
+                            intent.targetToken === 'eth'
+                                ? '0x0000000000000000000000000000000000000000'
+                                : intent.targetToken,
+                        making_amount: intent.sourceAmount,
+                        taking_amount: intent.targetAmount,
+                        order_hash_hex: '0x' + intentId.padStart(64, '0'), // Convert intent ID to 32-byte hex
+                        dst_chain_id: intent.targetChain === 'ethereum' ? 11155111 : 1, // Sepolia testnet
+                        timelocks_hex: '0x' + intent.deadline.toString(16).padStart(16, '0') // Convert deadline to hex
                     }
                 },
-                gas: new BN('300000000000000'),
-                attachedDeposit: new BN('1000000000000000000000') // 0.001 NEAR
+                gas: new BN('300000000000000') // No deposit required
             })
 
             // Intent submitted successfully
@@ -191,36 +191,30 @@ export class NearIntentsService {
         // Creating NEAR escrow for intent
 
         try {
-            const orderHashBytes = Array.from(Buffer.from(orderHash.slice(2), 'hex'))
-
             // Generate a temporary secret for the hashlock
             const secret =
                 '0x' +
                 Buffer.from('temp_secret_' + intent.id)
                     .toString('hex')
                     .padStart(64, '0')
-            const hashlock = Array.from(Buffer.from(secret.slice(2), 'hex'))
 
-            // Create escrow via the escrow contract
+            // Create escrow via the simpler create_dst_simple method
             await this.nearAccount.functionCall({
                 contractId: this.config.escrowContractId,
-                methodName: 'create_dst',
+                methodName: 'create_dst_simple',
                 args: {
-                    imm: {
-                        order_hash: orderHashBytes,
-                        hashlock,
-                        maker: Array.from(Buffer.alloc(20)), // Zero address
-                        taker: Array.from(Buffer.alloc(20)), // Zero address
-                        token: Array.from(Buffer.alloc(20)), // Native NEAR
-                        amount: intent.targetAmount,
-                        safety_deposit: '0',
-                        timelocks: this.packTimelocks()
-                    },
+                    order_hash_hex: orderHash,
+                    hashlock_hex: secret,
+                    maker_hex20: '0x0000000000000000000000000000000000000000', // Zero address
+                    taker_hex20: '0x0000000000000000000000000000000000000000', // Zero address
+                    token_hex20: '0x0000000000000000000000000000000000000000', // Native NEAR
+                    amount: intent.targetAmount, // Keep as string for large u128
+                    safety_deposit: '0', // Keep as string for u128
+                    timelocks: this.packTimelocks(),
                     maker_near: intent.user,
                     taker_near: this.config.nearAccountId
                 },
-                gas: new BN('300000000000000'),
-                attachedDeposit: new BN(intent.targetAmount) // Attach the target amount
+                gas: new BN('300000000000000') // No deposit needed since safety_deposit is 0
             })
 
             // NEAR escrow created
@@ -384,17 +378,19 @@ export class NearIntentsService {
     /**
      * Pack timelocks for escrow creation
      */
-    private packTimelocks(): string {
-        const DST_WITHDRAWAL = 600 // 10 min
-        const DST_PUBLIC_WITHDRAWAL = 1800 // 30 min
-        const DST_CANCELLATION = 3600 // 1 hour
+    private packTimelocks(): Record<string, string> {
+        const now = Math.floor(Date.now() / 1000) // Current time in seconds
 
-        const packed =
-            (BigInt(DST_WITHDRAWAL) << 128n) |
-            (BigInt(DST_PUBLIC_WITHDRAWAL) << 160n) |
-            (BigInt(DST_CANCELLATION) << 192n)
-
-        return packed.toString()
+        return {
+            deployed_at: now.toString(),
+            src_withdrawal: '600', // 10 min
+            src_public_withdrawal: '1800', // 30 min
+            src_cancellation: '3600', // 1 hour
+            src_public_cancellation: '7200', // 2 hours
+            dst_withdrawal: '600', // 10 min
+            dst_public_withdrawal: '1800', // 30 min
+            dst_cancellation: '3600' // 1 hour
+        }
     }
 
     /**

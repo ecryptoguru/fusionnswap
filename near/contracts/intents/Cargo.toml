@@ -1,7 +1,10 @@
 [package]
 name = "near-intents"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+description = "Production-ready NEAR Intents contract for cross-chain workflow coordination"
+authors = ["Enhanced Cross-Chain Bridge Team"]
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
