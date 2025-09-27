@@ -15,7 +15,7 @@ import "dotenv/config"
 import { ethers } from "ethers"
 import { connect, keyStores, KeyPair } from "near-api-js"
 import BN from "bn.js"
-import crypto from "node:crypto"
+import * as crypto from "node:crypto"
 import { createImmutables } from "../utils/address-encoding.js"
 
 function req(name: string): string {
@@ -170,7 +170,7 @@ async function main(): Promise<void> {
     await ks.setKey(
       NETWORK_ID,
       NEAR_ACCOUNT_ID,
-      KeyPair.fromString(NEAR_PRIVATE_KEY)
+      KeyPair.fromString(NEAR_PRIVATE_KEY as any)
     )
     const near = await connect({
       networkId: NETWORK_ID,
