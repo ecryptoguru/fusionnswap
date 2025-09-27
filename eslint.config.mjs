@@ -1,11 +1,7 @@
 import oneInchEslintConfig from "@1inch/eslint-config"
 export default [
   {
-    ignores: [
-      "contracts/lib/**",
-      "near/contracts/**/target/**",
-      "node_modules/**"
-    ]
+    ignores: ["contracts/lib/**", "near/contracts/**/target/**", "node_modules/**"]
   },
   ...oneInchEslintConfig,
   {
@@ -13,5 +9,5 @@ export default [
       "no-console": "off"
     },
     files: ["tests/**/**"]
-  },
+  }
 ]
