@@ -3,13 +3,11 @@
 // stub entrypoints for create_src/create_dst, withdraw_src/withdraw_dst, and cancel.
 
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{
-    near_bindgen, env, AccountId, PanicOnDefault, Promise, NearToken,
-    collections::{LookupMap, UnorderedMap},
-    serde::{Deserialize, Serialize}, PromiseOrValue,
-};
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, PromiseOrValue};
+use near_sdk::collections::{UnorderedMap, LookupMap};
 use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
 use tiny_keccak::{Hasher, Keccak};
+use serde::{Serialize, Deserialize};
 
 // Expanded timelocks for readability and strict typing on NEAR.
 #[derive(BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone, Copy)]
@@ -131,18 +129,12 @@ impl NearHtlcEscrow {
         assert!(now_sec < cancel_start, "too late");
         esc.withdrawn = true;
         self.escrows.insert(&key, &esc);
-        // REAL payouts: transfer deposited NEAR tokens to maker
+        // MOCK payouts: transfer amount to maker, safety deposit to caller (resolver)
         let caller = env::predecessor_account_id();
         let amount = self.locked_amounts.get(&key).unwrap_or(0);
         let sdep = self.safety_deposits.get(&key).unwrap_or(0);
-        // Transfer the actual deposited NEAR tokens to the maker (recipient)
-        self.credit(&esc.maker_near, sdep); // Deposited NEAR tokens go to maker
-        self.credit(caller.as_str(), amount); // Any locked amounts go to caller
-        
-        // Actually transfer NEAR tokens to maker's account
-        if sdep > 0 {
-            Promise::new(esc.maker_near.parse().unwrap()).transfer(NearToken::from_yoctonear(sdep));
-        }
+        self.credit(&esc.maker_near, amount);
+        self.credit(caller.as_str(), sdep);
         // zero out remaining locked amount after full withdrawal
         self.locked_amounts.insert(&key, &0u128);
     }
